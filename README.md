@@ -1,39 +1,52 @@
-# forexcurrencyapp
+# Forex Currency App
 
-BETAMERGE
+The Forex Currency App is a comprehensive platform built using Streamlit to analyze and visualize forex market data in real-time and across historical timeframes. This app is designed for clients who need quick access to currency trends, price changes, and performance metrics.
 
-example currentDate -> 18 / 10 / 2024
+## Features 
 
-1s
+- **Real-Time Data Display**:  
+  Displays continuously updating tables with currency trends, prices, percentage changes, and more.
 
-StartDate -> Yesterday 12 AM (i.e. 17/10/2024 12AM) EndDate -> Current time (i.e. 18/10/2024 -> currentTime) Aggregation -> Every second
+- **Historical Data Visualization**:  
+  Explore currency trends at different intervals:
+  - **1-second intervals** (from the start of the previous day)
+  - **1-minute intervals** (from the start of the previous month)
+  - **1-hour intervals** (from the start of the previous year)
 
-1m
+- **Customizable Time Ranges**:  
+  Visualize historical data trends for different periods, such as 1 day, 1 week, 1 month, or 1 year.
 
-StartDate -> start of last month (i.e. 1/9/2024 12AM) EndDate -> currentDate - 1 completed day (till 11:59PM) (i.e. 16/10/2024 11:59PM) Aggregation -> Every minute
+- **Dynamic Charts**:  
+  Trend charts for each data source to help users quickly analyze performance and changes over time.
 
-1h
+## How It Works
 
-StartDate -> 1st Jan of last year (i.e. 1/1/2023) EndDate -> 1 completed month earlier (i.e. 31 / 8 / 2024) Aggregation -> hourly data
+1. **Real-Time Data**:  
+   Fetches live forex data for various currency pairs and displays it in a table with key metrics and mini charts.
 
-Removed -> | This month | minute | 1m | | Last 30 days | minute | 1m | | This week | minute | 1m |
+2. **Historical Data**:  
+   Retrieves data for different intervals (1s, 1m, 1h) and presents it in separate tables and visualizations.
 
-| TimeRange | Aggregation | Id | | Last year | hourly | 1h | | Current year | hourly | 1h | | Current year -> Q1,2,3,4 | hourly | 1h | | Last 6 months | hourly | 1h | | Last month | minute | 1m | | Last week | minute | 1m | | Yesterday | second | 1s | | Today | second | 1s | | Last 12hr | second | 1s | | Last 24hr | second | 1s |
+3. **Interactive Graphs**:  
+   Enables users to interact with dropdowns to select time ranges and customize their analysis.
 
-Challenge -> where to store data?
+## Technologies Used
 
--> Each code run will fetch data for 1s, 1m, 1h historical data -> These historical data would be stored in local variables
+- **Streamlit**: For building the web application.
+- **Python**: Backend scripting for data processing and visualization.
+- **SSH Connections**: For fetching real-time and historical data from multiple data sources.
+- **Plotly**: For creating dynamic, interactive charts.
 
-Challenge -> How will you get updated data everyday?
+## Getting Started
 
--> Restart your server everyday in downtime -> (10min) (Is it okay with clients?)
+### Prerequisites
+- Python 3.9 or later
+- Streamlit installed (`pip install streamlit`)
+- Required libraries: Plotly, pandas, paramiko
 
-Pros: -> Use-case is solved
+### Installation
 
-Cons: -> Initial load time would be steap -> Memory usage could be higher
-
-What is the deployment procedure?
-
-Not in place
-
-No specific requirements for deploymenys
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/forex-currency-app.git
+   cd forex-currency-app
