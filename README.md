@@ -5,7 +5,7 @@ The Forex Currency App is a comprehensive platform built using Streamlit to anal
 ## Features 
 
 - **Real-Time Data Display**:  
-  Displays continuously updating tables with currency trends, prices, percentage changes, and more.
+  Displays continuously updating metric cards and a table with currency trends, prices, percentage changes, and more.
 
 - **Historical Data Visualization**:  
   Explore currency trends at different intervals:
@@ -22,10 +22,10 @@ The Forex Currency App is a comprehensive platform built using Streamlit to anal
 ## How It Works
 
 1. **Real-Time Data**:  
-   Fetches live forex data for various currency pairs and displays it in a table with key metrics and mini charts.
+   Fetches live forex data for various currency pairs and displays it in a table with key metrics.
 
 2. **Historical Data**:  
-   Retrieves data for different intervals (1s, 1m, 1h) and presents it in separate tables and visualizations.
+   Retrieves data for different intervals (1s, 1m, 1h) and presents it in separate visualizations.
 
 3. **Interactive Graphs**:  
    Enables users to interact with dropdowns to select time ranges and customize their analysis.
@@ -43,10 +43,3 @@ The Forex Currency App is a comprehensive platform built using Streamlit to anal
 - Python 3.9 or later
 - Streamlit installed (`pip install streamlit`)
 - Required libraries: Plotly, pandas, paramiko
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/forex-currency-app.git
-   cd forex-currency-app
