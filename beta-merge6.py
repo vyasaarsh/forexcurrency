@@ -478,6 +478,19 @@ def main():
         <div class="creator-credit">AV ANALYTIQUES - <a href="https://www.avanalytiques.com" target="_blank" style="color: #666; text-decoration: none;">www.avanalytiques.com</a> | Data Sourced By OLSEN DATA - <a href="https://www.olsendata.com" target="_blank" style="color: #666; text-decoration: none;">www.olsendata.com</a></div>
         """, unsafe_allow_html=True)
     
+    # Add the hide Streamlit style here
+    hide_streamlit_style = """ 
+    <style>
+    div[data-testid="stToolbar"] { visibility: hidden; height: 0%; position: fixed; } 
+    div[data-testid="stDecoration"] { visibility: hidden; height: 0%; position: fixed; } 
+    div[data-testid="stStatusWidget"] { visibility: hidden; height: 0%; position: fixed; } 
+    #MainMenu { visibility: hidden; height: 0%; } 
+    header { visibility: hidden; height: 0%; } 
+    footer { visibility: hidden; height: 0%; } 
+    </style> 
+    """
+    st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
     st.markdown('<p class="big-font">📊 Forex Currency App</p>', unsafe_allow_html=True)
     #st.divider()
 
