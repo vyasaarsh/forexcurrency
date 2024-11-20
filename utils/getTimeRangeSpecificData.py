@@ -67,31 +67,12 @@ def get_time_specific_data(time_range, parsed1s_data, parsed1m_data, parsed1h_da
             end_date = start_date.replace(hour=23, minute=59, second=59)  # Yesterday 11:59 PM
             filtered_data = [data for data in parsed1s_data if start_date <= datetime.strptime(data['Time'], '%Y%m%d %H:%M:%S') <= end_date]
             return filtered_data
-
+ 
         case TimeRange.TODAY_SECOND.value:
             start_date = current_date.replace(hour=0, minute=0, second=0)  # Today 12 AM
             end_date = current_date  # Current time today
-            
-            filtered_data = []
-            for data in parsed1s_data:
-                try:
-                    # Try both parsing formats
-                    try:
-                        data_time = datetime.strptime(data['Time'], '%Y%m%d %H:%M:%S')
-                    except ValueError:
-                        data_time = datetime.strptime(data['Time'], '%d.%m.%Y %H:%M:%S')
-                        
-                    if start_date <= data_time <= end_date:
-                        filtered_data.append(data)
-                except Exception as e:
-                    st.error(f"Error parsing time {data['Time']}: {e}")
+            filtered_data = [data for data in parsed1s_data if start_date <= datetime.strptime(data['Time'], '%Y%m%d %H:%M:%S') <= end_date]
             return filtered_data
-        
-        #case TimeRange.TODAY_SECOND.value:
-         #   start_date = current_date.replace(hour=0, minute=0, second=0)  # Today 12 AM
-          #  end_date = current_date  # Current time today
-           # filtered_data = [data for data in parsed1s_data if start_date <= datetime.strptime(data['Time'], '%Y%m%d %H:%M:%S') <= end_date]
-            #return filtered_data
 
         case TimeRange.LAST_12HR_SECOND.value:
             start_date = current_date - timedelta(hours=12)  # 12 hours ago
