@@ -1,6 +1,6 @@
 # Libraries
 import streamlit as st
-import pandas as pd 
+import pandas as pd
 from time import sleep, time
 from collections import defaultdict, deque
 import threading
@@ -267,16 +267,16 @@ def display_historical_data():
     with col2:
         chart_type = st.selectbox(
             "📊 Chart Type",
-            ["Line", "Area"],
+            ["Line"],
             key="chart_type"
         )
 
     with col3:
-        selected_pairs = st.multiselect(
+        selected_pair = st.selectbox(
             "💱 Currency Pairs",
             list(CURRENCY_PAIRS.keys()),
-            default=list(CURRENCY_PAIRS.keys())[:1],
-            key="currency_pairs"
+            #default=list(CURRENCY_PAIRS.keys())[:1],
+            key="currency_pair"
         )
 
     with col4:
@@ -291,7 +291,7 @@ def display_historical_data():
     # Get historical data
     parsed_hist1s_data, parsed_hist1m_data, parsed_hist1h_data = fetch_all_historical_resource_once()
     
-    selected_symbols = [CURRENCY_PAIRS[pair] for pair in selected_pairs]
+    selected_symbol = CURRENCY_PAIRS[selected_pair]
     selected_time_range = next((time_range for time_range in TimeRange if time_range.value == option), None)
 
     time_range_data = []
@@ -299,10 +299,10 @@ def display_historical_data():
             time_range_data = get_time_specific_data(selected_time_range.value, parsed_hist1s_data, parsed_hist1m_data, parsed_hist1h_data)
 
     st.subheader(f"Historical Data for {selected_time_range.value}")
-    
+
     if time_range_data:
             df_time_range = pd.DataFrame(time_range_data)
-            df_time_range = df_time_range[df_time_range['Symbol'].isin(selected_symbols)]
+            df_time_range = df_time_range[df_time_range['Symbol'] == selected_symbol]
 
         # Calculate metrics
             #metrics_cols = st.columns(4)
@@ -325,7 +325,7 @@ def display_historical_data():
         
     # Ensure that the dataframe contains 'Timestamp' and 'Last Price' for plotting
         
-    st.subheader(f"📈 {selected_time_range.value} Price Trends")
+    st.subheader(f"📈 {selected_time_range.value}")
 
     if 'Time' in df_time_range.columns and 'Last Price' in df_time_range.columns:
             # Apply chart style
@@ -374,15 +374,15 @@ def display_historical_data():
                  #   template=template,
                   #  showlegend=True
                 #)
-            else:  # Area chart
-                fig = px.area(
-                    df_time_range,
-                    x='Time',
-                    y='Last Price',
-                    color='Symbol',
-                    title=f"{selected_time_range.value} Price Trends",
-                    template=template
-                )
+            #else:  # Area chart
+             #   fig = px.area(
+              #      df_time_range,
+               #     x='Time',
+                #    y='Last Price',
+                 #   color='Symbol',
+                  #  title=f"{selected_time_range.value} Price Trends",
+                   # template=template
+                #)
 
             # Common chart updates
             fig.update_layout(
@@ -475,7 +475,7 @@ def main():
             z-index: 99 !important;
         }
         </style>
-        <div class="creator-credit">AV ANALYTIQUES - <a href="https://www.avanalytiques.com" target="_blank" style="color: #666; text-decoration: none;">www.avanalytiques.com</a> | Data Sourced By OLSEN DATA - <a href="https://www.olsendata.com" target="_blank" style="color: #666; text-decoration: none;">www.olsendata.com</a></div>
+        <div class="creator-credit">AV ANALYTIQUES - <a href="https://www.avanalytiques.com" target="_blank" style="color: #666; text-decoration: none;">www.avanalytiques.com</a> | Data Sourced from OLSEN DATA - <a href="https://www.olsendata.com" target="_blank" style="color: #666; text-decoration: none;">www.olsendata.com</a></div>
         """, unsafe_allow_html=True)
     
     # Add the hide Streamlit style here
