@@ -1,3 +1,6 @@
+# FLICKERING STOPPED AND HISTORICAL TIMESTAMP CHANGE AND REALTIME COLUMN CHANGES IN SIZE
+#https://claude.ai/chat/a126edc0-449e-4d4d-88e6-e6f0397339f8
+
 # Libraries
 import streamlit as st
 import pandas as pd
@@ -6,6 +9,7 @@ from collections import defaultdict, deque
 import threading
 import plotly.express as px
 import logging
+import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -14,7 +18,7 @@ from utils.getTimeRangeSpecificData import get_time_specific_data
 from utils.connectionUtils import connect_ssh_agent
 from utils.dataParser import parse_real_time_data, parse_hist1h_data, parse_hist1m_data, parse_hist1s_data
 
-# Retrieve Real-Time (rt) data
+# Retrieve Real-Time (rt) data  
 def get_real_time_data_rt(channel, historic_data):
     if channel.recv_ready():
         data = channel.recv(4096).decode('ascii')
@@ -179,6 +183,10 @@ def display_real_time_data():
     # Create data table placeholder
     data_placeholder = st.empty()
     
+    # Initialize a dataframe in session state if it doesn't exist
+    if 'rt_table_data' not in st.session_state:
+        st.session_state.rt_table_data = pd.DataFrame(columns=['Symbol', 'Trend', 'Price', 'Change', '% Change'])
+
     while True:
         new_data_rt = get_real_time_data_rt(
             st.session_state.rt_channel, 
@@ -192,6 +200,18 @@ def display_real_time_data():
                 if item['Symbol'] in PREDEFINED_SYMBOLS
             ]
             
+            # Create a new DataFrame from the filtered data
+            new_df = pd.DataFrame(filtered_data)
+            new_df['% Change'] = new_df['% Change'].apply(lambda x: f"{x:.2f}%")
+            new_df = new_df[['Symbol', 'Trend', 'Price', 'Change', '% Change']].sort_values(by='Symbol').drop_duplicates(subset=['Symbol'])
+
+
+            # Efficiently update the session state DataFrame
+            st.session_state.rt_table_data = new_df
+
+            for item in filtered_data:
+                item['% Change'] = f"{item['% Change']:.2f}%" 
+
             # Update highest and lowest prices
             for item in filtered_data:
                 symbol = item['Symbol']
@@ -225,28 +245,20 @@ def display_real_time_data():
             # Update data table
             with data_placeholder.container():
                 st.markdown("### 📈 Live Price Updates")
-                table_data_rt = pd.DataFrame(filtered_data)
-                table_data_rt['% Change'] = table_data_rt['% Change'].apply(lambda x: f"{x:.2f}%")
-                sorted_table_rt = table_data_rt[['Symbol', 'Trend', 'Price', 'Change', '% Change']]\
-                    .drop_duplicates(subset=['Symbol'])\
-                    .sort_values(by='Symbol')
-                
-                st.data_editor(
-                    sorted_table_rt,
+                st.dataframe(
+                    st.session_state.rt_table_data,
                     column_config={
-                        "Symbol": st.column_config.TextColumn("Symbol"),
-                        "Trend": st.column_config.LineChartColumn("Trend", width="medium"),
-                        "Price": st.column_config.NumberColumn("Price"),
-                        "Change": st.column_config.NumberColumn("Change"),
-                        "% Change": st.column_config.NumberColumn("% Change"),
+                        "Symbol": st.column_config.TextColumn("Symbol", width=30),
+                        "Trend": st.column_config.LineChartColumn("Trend", width=600),
+                        "Price": st.column_config.NumberColumn("Price", width=30),
+                        "Change": st.column_config.NumberColumn("Change", width=30),
+                        "% Change": st.column_config.TextColumn("% Change", width=30),
                     },
                     hide_index=True,
-                    use_container_width=True,
-                    key=f"rt_data_editor_{int(time())}"
+                    use_container_width=True
                 )
-        
+            
         sleep(1)
-
 def display_historical_data():
     st.markdown("### 🔍 Filters")
     col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
@@ -275,7 +287,6 @@ def display_historical_data():
         selected_pair = st.selectbox(
             "💱 Currency Pairs",
             list(CURRENCY_PAIRS.keys()),
-            #default=list(CURRENCY_PAIRS.keys())[:1],
             key="currency_pair"
         )
 
@@ -296,38 +307,17 @@ def display_historical_data():
 
     time_range_data = []
     if parsed_hist1s_data is not None and parsed_hist1m_data is not None and parsed_hist1h_data is not None:
-            time_range_data = get_time_specific_data(selected_time_range.value, parsed_hist1s_data, parsed_hist1m_data, parsed_hist1h_data)
+        time_range_data = get_time_specific_data(selected_time_range.value, parsed_hist1s_data, parsed_hist1m_data, parsed_hist1h_data)
 
     st.subheader(f"Historical Data for {selected_time_range.value}")
 
     if time_range_data:
-            df_time_range = pd.DataFrame(time_range_data)
-            df_time_range = df_time_range[df_time_range['Symbol'] == selected_symbol]
+        df_time_range = pd.DataFrame(time_range_data)
+        df_time_range = df_time_range[df_time_range['Symbol'] == selected_symbol]
 
-        # Calculate metrics
-            #metrics_cols = st.columns(4)
-            #for idx, symbol in enumerate(df_time_range['Symbol'].unique()):
-             #   symbol_data = df_time_range[df_time_range['Symbol'] == symbol]
-              #  current_price = symbol_data['Last Price'].iloc[-1]
-               # price_change = current_price - symbol_data['Last Price'].iloc[0]
-               # price_change_pct = (price_change / symbol_data['Last Price'].iloc[0]) * 100
-            
-                #with metrics_cols[idx]:
-                 #   st.markdown(f"""
-                  #      <div class="metric-card">
-                   #         <h3>{symbol}</h3>
-                    #        <p style="font-size: 24px">{current_price:.4f}</p>
-                     #       <p style="color: {'#00ff00' if price_change >= 0 else '#ff0000'}">
-                      #          {price_change:+.4f} ({price_change_pct:+.2f}%)
-                       #     </p>
-                        #</div>
-                   # """, unsafe_allow_html=True)
-        
-    # Ensure that the dataframe contains 'Timestamp' and 'Last Price' for plotting
-        
-    st.subheader(f"📈 {selected_time_range.value}")
+        st.subheader(f"📈 {selected_time_range.value}")
 
-    if 'Time' in df_time_range.columns and 'Last Price' in df_time_range.columns:
+        if 'Time' in df_time_range.columns and 'Last Price' in df_time_range.columns:
             # Apply chart style
             if chart_style == "Trading View":
                 template = "plotly_dark"
@@ -347,78 +337,72 @@ def display_historical_data():
                     df_time_range,
                     x='Time',
                     y='Last Price',
-                    color='Symbol',
-                    title=f"{selected_time_range.value} Price Trends",
+                    title=f"{selected_time_range.value}",
                     template=template
                 )
-            #elif chart_type == "Candlestick":
-             #   fig = make_subplots(rows=len(selected_symbols), 
-              #                    cols=1,
-               #                   subplot_titles=[f"{symbol} Price" for symbol in selected_symbols],
-                #                  vertical_spacing=0.05)
                 
-                #for idx, symbol in enumerate(selected_symbols, start=1):
-                 #   symbol_data = df_time_range[df_time_range['Symbol'] == symbol]
-                  #  fig.add_trace(
-                   #     go.Scatter(
-                    #        x=symbol_data['Time'],
-                     #       y=symbol_data['Last Price'],
-                      #      name=symbol,
-                       #     line=dict(width=2)
-                       # ),
-                       # row=idx, col=1
-                    #)
-                    
-               # fig.update_layout(
-                #    height=250 * len(selected_symbols),
-                 #   template=template,
-                  #  showlegend=True
-                #)
-            #else:  # Area chart
-             #   fig = px.area(
-              #      df_time_range,
-               #     x='Time',
-                #    y='Last Price',
-                 #   color='Symbol',
-                  #  title=f"{selected_time_range.value} Price Trends",
-                   # template=template
-                #)
+                # Remove duplicate traces
+                fig.data = [fig.data[0]]
+                
+                n_ticks = 10  # Desired maximum number of ticks
+                indices = np.linspace(0, len(df_time_range) - 1, n_ticks, dtype=int)
+                x_axis_labels = df_time_range['Time'].iloc[indices]
+                fig.update_layout(xaxis_tickvals=x_axis_labels.tolist())
+
+                # Update line appearance
+                fig.update_traces(
+                    line=dict(width=1.5, color='#0066FF'),
+                    showlegend=False
+                )
 
             # Common chart updates
             fig.update_layout(
                 xaxis_title='Time',
                 yaxis_title='Price',
                 hovermode='x unified',
-                legend=dict(
-                    yanchor="top",
-                    y=0.99,
-                    xanchor="left",
-                    x=0.01,
-                    bgcolor="rgba(0,0,0,0.5)"
-                ),
                 plot_bgcolor=bg_color,
                 paper_bgcolor=bg_color,
-                font=dict(color='white')
+                font=dict(color='white'),
+                margin=dict(t=50, b=50, l=50, r=50),
+                showlegend=False
             )
 
-            fig.update_xaxes(gridcolor=grid_color, zeroline=False)
-            fig.update_yaxes(gridcolor=grid_color, zeroline=False)
-
-            # Add range selector for time range
+            # Update axes
             fig.update_xaxes(
-                rangeslider_visible=True,
+                gridcolor=grid_color,
+                zeroline=False,
+                showline=True,
+                linewidth=1,
+                linecolor='rgba(255,255,255,0.2)',
+                mirror=True
+            )
+            
+            fig.update_yaxes(
+                gridcolor=grid_color,
+                zeroline=False,
+                showline=True,
+                linewidth=1,
+                linecolor='rgba(255,255,255,0.2)',
+                mirror=True
+            )
+
+            # Add range selector
+            fig.update_xaxes(
+                rangeslider=dict(visible=True, thickness=0.05),
                 rangeselector=dict(
                     buttons=list([
                         dict(count=1, label="1d", step="day", stepmode="backward"),
                         dict(count=7, label="1w", step="day", stepmode="backward"),
                         dict(count=1, label="1m", step="month", stepmode="backward"),
                         dict(step="all")
-                    ])
+                    ]),
+                    bgcolor=bg_color,
+                    activecolor='#1e88e5'
                 )
             )
 
             st.plotly_chart(fig, use_container_width=True)
-    else:
+        else:
             st.warning("No data available for the selected time range.")
 
 def main():
