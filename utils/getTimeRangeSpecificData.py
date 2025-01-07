@@ -47,14 +47,21 @@ def get_time_specific_data(time_range, parsed1s_data, parsed1m_data, parsed1h_da
             end_date = current_date
             filtered_data = [data for data in parsed1h_data if start_date <= datetime.strptime(data['Time'], '%d.%m.%Y %H:%M:%S') <= end_date]
             return filtered_data
-
+  
         # Minute aggregations
-        case TimeRange.LAST_MONTH_MINUTE.value:
-            start_date = datetime(current_date.year, current_date.month - 1, 1)  # Start of last month
-            end_date = current_date.replace(day=1) - timedelta(days=1)  # Last day of last month
-            filtered_data = [data for data in parsed1m_data if start_date <= datetime.strptime(data['Time'].strip(), '%Y%m%d %H:%M:%S') <= end_date]
-            return filtered_data
 
+        case TimeRange.LAST_MONTH_MINUTE.value:
+            first_day_current_month = current_date.replace(day=1)
+            last_day_previous_month = first_day_current_month - timedelta(days=1)
+            start_date = last_day_previous_month.replace(day=1)
+            end_date = last_day_previous_month
+            filtered_data = [
+                data for data in parsed1m_data 
+                if data.get('Time') and 
+                start_date <= datetime.strptime(data['Time'].strip(), '%Y%m%d %H:%M:%S') <= end_date
+            ]
+            return filtered_data
+            
         case TimeRange.LAST_WEEK_MINUTE.value:
             start_date = current_date - timedelta(days=7)  # 7 days ago
             end_date = current_date
