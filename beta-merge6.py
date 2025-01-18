@@ -371,7 +371,7 @@ def display_historical_data():
             fig.update_xaxes(
                 gridcolor=grid_color,
                 zeroline=False,
-                showline=True,
+                showline=False,
                 linewidth=1,
                 linecolor='rgba(255,255,255,0.2)',
                 mirror=True
@@ -380,7 +380,7 @@ def display_historical_data():
             fig.update_yaxes(
                 gridcolor=grid_color,
                 zeroline=False,
-                showline=True,
+                showline=False,
                 linewidth=1,
                 linecolor='rgba(255,255,255,0.2)',
                 mirror=True
@@ -388,7 +388,7 @@ def display_historical_data():
 
             # Add range selector
             fig.update_xaxes(
-                rangeslider=dict(visible=True, thickness=0.05),
+                rangeslider=dict(visible=False),
                 rangeselector=dict(
                     buttons=list([
                         dict(count=1, label="1d", step="day", stepmode="backward"),
